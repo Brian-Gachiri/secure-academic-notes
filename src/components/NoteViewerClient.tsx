@@ -49,20 +49,16 @@ export function NoteViewerClient({
 
       // Render via pdf.js into <canvas> to discourage selection/download.
       // In a real product, consider server-side watermarking and DRM-like solutions.
-      const pdfjs = await import("pdfjs-dist");
-      // @ts-expect-error - pdfjs-dist types differ by build target; dynamic import is used.
+      const pdfjs: any = await import("pdfjs-dist");
       pdfjs.GlobalWorkerOptions.workerSrc = new URL(
         "pdfjs-dist/build/pdf.worker.min.mjs",
         import.meta.url
       ).toString();
 
-      // @ts-expect-error - pdfjs-dist types differ by build target.
       const loadingTask = pdfjs.getDocument({ data: bytes });
-      // @ts-expect-error - pdfjs-dist types differ by build target.
       const pdf = await loadingTask.promise;
       pdfDocRef.current = pdf;
 
-      // @ts-expect-error - pdfjs-dist types differ by build target.
       setPageCount(pdf.numPages);
       setPage(1);
 
