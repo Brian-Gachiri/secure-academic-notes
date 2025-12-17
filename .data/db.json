@@ -1,0 +1,128 @@
+{
+  "users": [
+    {
+      "id": "lecturer@example.com",
+      "name": "Lecturer",
+      "email": "lecturer@example.com",
+      "role": "LECTURER",
+      "passwordSalt": "a2738e41ca5dcb76de04b60968d98c3c",
+      "passwordHash": "f47f4f4b7c859cc20e49bef56739ccaa88859b05ee5461abae13bb99bad2bbef"
+    },
+    {
+      "id": "student@example.com",
+      "name": "Student",
+      "email": "student@example.com",
+      "role": "STUDENT",
+      "passwordSalt": "ae9d6824fdd4cd6a2112513453651a78",
+      "passwordHash": "82aa9ee835916da395de5a7fb82738aa3ae87c6b23f7d247d4e412abea62fa38"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note_9e438e6829508d310290b30e044cae19",
+      "title": "Linear Algebra",
+      "filename": "note_9e438e6829508d310290b30e044cae19.pdf",
+      "uploadedBy": "lecturer@example.com",
+      "createdAt": "2025-12-17T16:49:34.389Z"
+    },
+    {
+      "id": "note_43c324b76a27cc0a45b617833077ee40",
+      "title": "Another",
+      "filename": "note_43c324b76a27cc0a45b617833077ee40.pdf",
+      "uploadedBy": "lecturer@example.com",
+      "createdAt": "2025-12-17T17:25:03.423Z"
+    }
+  ],
+  "accessLogs": [
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:24:05.950Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:24:31.872Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:24:31.995Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:25:05.935Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:25:06.096Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:28:44.673Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:28:44.841Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:29:28.364Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:29:28.556Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:35:22.765Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:35:49.189Z"
+    },
+    {
+      "userId": "lecturer@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:35:49.303Z"
+    },
+    {
+      "userId": "student@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:41:15.235Z"
+    },
+    {
+      "userId": "student@example.com",
+      "noteId": "note_43c324b76a27cc0a45b617833077ee40",
+      "timestamp": "2025-12-17T17:41:15.297Z"
+    },
+    {
+      "userId": "student@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:41:18.898Z"
+    },
+    {
+      "userId": "student@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T17:41:19.041Z"
+    },
+    {
+      "userId": "student@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T19:48:08.054Z"
+    },
+    {
+      "userId": "student@example.com",
+      "noteId": "note_9e438e6829508d310290b30e044cae19",
+      "timestamp": "2025-12-17T19:48:08.114Z"
+    }
+  ]
+}
