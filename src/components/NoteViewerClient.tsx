@@ -7,10 +7,16 @@ import { ViewerHardening } from "@/components/ViewerHardening";
 
 export function NoteViewerClient({
   noteId,
-  user,
+  watermarkLabel,
+  fetchPdf,
+  backHref,
+  backLabel,
 }: {
   noteId: string;
-  user: { name: string; email: string };
+  watermarkLabel: string;
+  fetchPdf?: (noteId: string) => Promise<any>;
+  backHref?: string;
+  backLabel?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pdfDocRef = useRef<unknown>(null);
@@ -36,7 +42,8 @@ export function NoteViewerClient({
 
     (async () => {
       setStatus({ type: "loading" });
-      const res = await getNotePdfBase64Action(noteId);
+      const loader = fetchPdf ?? getNotePdfBase64Action;
+      const res = await loader(noteId);
 
       if (!active) return;
 
@@ -62,7 +69,7 @@ export function NoteViewerClient({
       setPageCount(pdf.numPages);
       setPage(1);
 
-      const watermark = `${user.name} • ${user.email} • ${createdAt}`;
+      const watermark = `${watermarkLabel} • ${createdAt}`;
 
       setStatus({ type: "ready", title: res.title, watermark });
     })();
@@ -115,9 +122,11 @@ export function NoteViewerClient({
               Prototype viewer: download/copy is discouraged but not fully preventable.
             </p>
           </div>
-          <Link href="/dashboard" className="rounded-lg bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700">
-            Back
-          </Link>
+          {backHref ? (
+            <Link href={backHref} className="rounded-lg bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700">
+              {backLabel ?? "Back"}
+            </Link>
+          ) : null}
         </div>
 
         {status.type === "ready" ? (

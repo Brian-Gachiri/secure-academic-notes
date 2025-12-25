@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation";
-import { readDb } from "./db";
 import { hashPassword, timingSafeEqualHex } from "./crypto";
 import { clearSessionCookie, getSessionUserId, setSessionCookie } from "./session";
+import { findUserByEmail, findUserById } from "./repo";
 import type { Role, User } from "./types";
 
 export async function getCurrentUser(): Promise<User | null> {
   const userId = await getSessionUserId();
   if (!userId) return null;
 
-  const db = readDb();
-  const user = db.users.find((u) => u.id === userId);
+  const user = await findUserById(userId);
   if (!user) return null;
 
   const { passwordHash: _ph, passwordSalt: _ps, ...safe } = user;
@@ -31,8 +30,7 @@ export async function requireRole(role: Role): Promise<User> {
 }
 
 export async function attemptLogin(email: string, password: string): Promise<User | null> {
-  const db = readDb();
-  const user = db.users.find((u) => u.email === email.toLowerCase());
+  const user = await findUserByEmail(email);
   if (!user) return null;
 
   const { hash } = hashPassword(password, user.passwordSalt);

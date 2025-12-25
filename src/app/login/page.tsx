@@ -21,8 +21,6 @@ export default async function LoginPage({
           Prototype credentials:
           <br />
           Lecturer: lecturer@example.com / password
-          <br />
-          Student: student@example.com / password
         </p>
 
         <form action={loginAction} className="mt-8 space-y-4 rounded-xl border bg-white p-6 shadow-sm">

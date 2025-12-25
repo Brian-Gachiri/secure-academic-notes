@@ -25,6 +25,10 @@ export function randomId(prefix: string) {
   return `${prefix}_${crypto.randomBytes(16).toString("hex")}`;
 }
 
+export function randomToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
 export function nowIso() {
   return new Date().toISOString();
 }

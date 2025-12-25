@@ -1,18 +1,28 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/server/auth";
-import { listNotesAction, logoutAction, uploadNoteAction } from "@/lib/server/actions";
+import { createShareLinkAction, listNotesAction, logoutAction, revokeShareLinkAction, uploadNoteAction } from "@/lib/server/actions";
+import { listShareLinksForNote } from "@/lib/server/repo";
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ error?: string; uploaded?: string }>;
+  searchParams?: Promise<{ error?: string; uploaded?: string; share?: string; revoked?: string }>;
 }) {
   const user = await requireUser();
   const notes = await listNotesAction();
 
+  const noteLinks =
+    user.role === "LECTURER"
+      ? await Promise.all(
+          notes.map(async (n) => ({ noteId: n.id, links: await listShareLinksForNote(n.id) }))
+        )
+      : [];
+
   const sp = searchParams ? await searchParams : undefined;
   const error = sp?.error;
   const uploaded = sp?.uploaded;
+  const share = sp?.share;
+  const revoked = sp?.revoked;
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
@@ -43,6 +53,18 @@ export default async function DashboardPage({
         {uploaded ? (
           <div className="mt-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
             Uploaded.
+          </div>
+        ) : null}
+
+        {share ? (
+          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Share link created: <span className="font-mono">/share/{share}</span>
+          </div>
+        ) : null}
+
+        {revoked ? (
+          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Share link revoked.
           </div>
         ) : null}
 
@@ -113,13 +135,60 @@ export default async function DashboardPage({
                     <div>
                       <div className="text-sm font-medium">{n.title}</div>
                       <div className="mt-0.5 text-xs text-zinc-500">Uploaded {new Date(n.createdAt).toLocaleString()}</div>
+
+                      {user.role === "LECTURER" ? (
+                        <div className="mt-3 space-y-2">
+                          <form action={createShareLinkAction} className="flex flex-wrap items-center gap-2">
+                            <input type="hidden" name="noteId" value={n.id} />
+                            <input
+                              name="expiresInHours"
+                              placeholder="Expires (hrs)"
+                              className="w-32 rounded-lg border px-2 py-2 text-sm"
+                            />
+                            <button
+                              type="submit"
+                              className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                            >
+                              Create share link
+                            </button>
+                          </form>
+
+                          <div className="space-y-1">
+                            {(noteLinks.find((x) => x.noteId === n.id)?.links ?? []).slice(0, 3).map((l) => (
+                              <div key={l.token} className="flex flex-wrap items-center gap-2 text-xs">
+                                <span className="font-mono">/share/{l.token}</span>
+                                <span className="text-zinc-500">
+                                  {l.revokedAt
+                                    ? "revoked"
+                                    : l.expiresAt
+                                      ? `expires ${new Date(l.expiresAt).toLocaleString()}`
+                                      : "no expiry"}
+                                </span>
+                                {!l.revokedAt ? (
+                                  <form action={revokeShareLinkAction}>
+                                    <input type="hidden" name="token" value={l.token} />
+                                    <button
+                                      type="submit"
+                                      className="rounded-md border bg-white px-2 py-1 text-xs hover:bg-zinc-50"
+                                    >
+                                      Revoke
+                                    </button>
+                                  </form>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
-                    <Link
-                      href={`/notes/${n.id}`}
-                      className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-zinc-50"
-                    >
-                      View
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/notes/${n.id}`}
+                        className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-zinc-50"
+                      >
+                        View
+                      </Link>
+                    </div>
                   </li>
                 ))}
               </ul>
