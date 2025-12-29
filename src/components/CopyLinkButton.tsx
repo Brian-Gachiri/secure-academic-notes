@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export function CopyLinkButton({ url }: { url: string }) {
+export function CopyLinkButton({
+  url,
+  className,
+}: {
+  url: string;
+  className?: string;
+}) {
   const [label, setLabel] = useState("Copy link");
 
   async function onCopy() {
@@ -33,7 +39,10 @@ export function CopyLinkButton({ url }: { url: string }) {
     <button
       type="button"
       onClick={onCopy}
-      className="rounded-md border bg-white px-2 py-1 text-xs hover:bg-zinc-50"
+      className={
+        className ??
+        "rounded-md border bg-white px-2 py-1 text-xs font-medium text-zinc-900 hover:bg-zinc-50"
+      }
     >
       {label}
     </button>

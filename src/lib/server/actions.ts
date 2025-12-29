@@ -8,6 +8,7 @@ import {
   downloadPdf,
   ensureSeedUsers,
   createShareLink,
+  deleteNoteById,
   findValidShareLink,
   findNoteById,
   insertAccessLog,
@@ -98,6 +99,22 @@ export async function revokeShareLinkAction(formData: FormData) {
   await revokeShareLink(token);
   revalidatePath("/dashboard");
   redirect("/dashboard?revoked=1");
+}
+
+export async function deleteNoteAction(formData: FormData) {
+  const user = await requireRole("LECTURER");
+  const noteId = String(formData.get("noteId") ?? "");
+  if (!noteId) redirect(`/dashboard?error=${encodeURIComponent("Missing note id.")}`);
+
+  const note = await findNoteById(noteId);
+  if (!note) redirect(`/dashboard?error=${encodeURIComponent("Note not found.")}`);
+  if (note.uploadedBy !== user.id) {
+    redirect(`/dashboard?error=${encodeURIComponent("You can only delete notes you uploaded.")}`);
+  }
+
+  await deleteNoteById(noteId);
+  revalidatePath("/dashboard");
+  redirect("/dashboard?deleted=1");
 }
 
 export async function listShareLinksForNoteAction(noteId: string) {

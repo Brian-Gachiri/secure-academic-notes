@@ -218,3 +218,18 @@ export async function downloadPdf(storagePath: string): Promise<Uint8Array> {
   const ab = await data.arrayBuffer();
   return new Uint8Array(ab);
 }
+
+export async function deleteNoteById(noteId: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+
+  const note = await findNoteById(noteId);
+  if (!note) return;
+
+  const bucket = getNotesBucketName();
+
+  const { error: storageErr } = await supabase.storage.from(bucket).remove([note.storagePath]);
+  if (storageErr) throw storageErr;
+
+  const { error: noteErr } = await supabase.from("notes").delete().eq("id", noteId);
+  if (noteErr) throw noteErr;
+}

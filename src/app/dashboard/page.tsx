@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/server/auth";
-import { createShareLinkAction, listNotesAction, logoutAction, revokeShareLinkAction, uploadNoteAction } from "@/lib/server/actions";
+import { createShareLinkAction, deleteNoteAction, listNotesAction, logoutAction, revokeShareLinkAction, uploadNoteAction } from "@/lib/server/actions";
 import { listShareLinksForNote } from "@/lib/server/repo";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { ShareLinkCreateFormClient } from "@/components/ShareLinkCreateFormClient";
+import { DeleteNoteButton } from "@/components/DeleteNoteButton";
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ error?: string; uploaded?: string; share?: string; revoked?: string }>;
+  searchParams?: Promise<{ error?: string; uploaded?: string; share?: string; revoked?: string; deleted?: string }>;
 }) {
   const user = await requireUser();
   const notes = await listNotesAction();
@@ -27,6 +28,7 @@ export default async function DashboardPage({
   const uploaded = sp?.uploaded;
   const share = sp?.share;
   const revoked = sp?.revoked;
+  const deleted = sp?.deleted;
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
@@ -72,6 +74,12 @@ export default async function DashboardPage({
           </div>
         ) : null}
 
+        {deleted ? (
+          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            Note deleted.
+          </div>
+        ) : null}
+
         {user.role === "LECTURER" ? (
           <div className="mt-8 rounded-xl border bg-white p-6 shadow-sm">
             <h2 className="text-base font-semibold">Upload PDF notes</h2>
@@ -113,13 +121,6 @@ export default async function DashboardPage({
               </div>
             </form>
 
-            {/*
-              In a real app you would:
-              - Store files in S3/GCS with access controls
-              - Virus scan uploads
-              - Validate PDFs more thoroughly
-              - Extract text for search
-            */}
           </div>
         ) : null}
 
@@ -137,7 +138,7 @@ export default async function DashboardPage({
                 {notes.map((n) => (
                   <li key={n.id} className="flex items-center justify-between gap-3 p-4">
                     <div>
-                      <div className="text-sm font-medium">{n.title}</div>
+                      <div className="text-sm font-bold">{n.title}</div>
                       <div className="mt-0.5 text-xs text-zinc-500">Uploaded {new Date(n.createdAt).toLocaleString()}</div>
 
                       {user.role === "LECTURER" ? (
@@ -146,29 +147,59 @@ export default async function DashboardPage({
 
                           <div className="space-y-1">
                             {(noteLinks.find((x) => x.noteId === n.id)?.links ?? []).slice(0, 3).map((l) => (
-                              <div key={l.token} className="flex flex-wrap items-center gap-2 text-xs">
-                                <span className="font-mono">
-                                  {appUrl ? `${appUrl}/share/${l.token}` : `/share/${l.token}`}
-                                </span>
-                                <CopyLinkButton url={appUrl ? `${appUrl}/share/${l.token}` : `/share/${l.token}`} />
-                                <span className="text-zinc-500">
-                                  {l.revokedAt
-                                    ? "revoked"
-                                    : l.expiresAt
-                                      ? `expires ${new Date(l.expiresAt).toLocaleString()}`
-                                      : "no expiry"}
-                                </span>
-                                {!l.revokedAt ? (
-                                  <form action={revokeShareLinkAction}>
-                                    <input type="hidden" name="token" value={l.token} />
+                              <div
+                                key={l.token}
+                                className="flex flex-col gap-2 rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                              >
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="max-w-[520px] truncate font-mono text-xs text-zinc-900">
+                                      {appUrl ? `${appUrl}/share/${l.token}` : `/share/${l.token}`}
+                                    </span>
+                                  </div>
+                                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                                    {l.revokedAt ? (
+                                      <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-medium text-zinc-700">
+                                        Revoked
+                                      </span>
+                                    ) : l.expiresAt ? (
+                                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                                        Expires {new Date(l.expiresAt).toLocaleString()}
+                                      </span>
+                                    ) : (
+                                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
+                                        No expiry
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <CopyLinkButton
+                                    url={appUrl ? `${appUrl}/share/${l.token}` : `/share/${l.token}`}
+                                    className="rounded-md px-3 py-1.5 text-xs font-semibold border cursor-pointer hover:bg-zinc-300"
+                                  />
+
+                                  {!l.revokedAt ? (
+                                    <form action={revokeShareLinkAction}>
+                                      <input type="hidden" name="token" value={l.token} />
+                                      <button
+                                        type="submit"
+                                        className="rounded-md border border-red-500 bg-red-50 px-3 py-1.5 text-xs cursor-pointer font-semibold text-red-500 hover:bg-red-200"
+                                      >
+                                        Revoke
+                                      </button>
+                                    </form>
+                                  ) : (
                                     <button
-                                      type="submit"
-                                      className="rounded-md border bg-white px-2 py-1 text-xs hover:bg-zinc-50"
+                                      type="button"
+                                      disabled
+                                      className="rounded-md bg-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-600"
                                     >
-                                      Revoke
+                                      Revoked
                                     </button>
-                                  </form>
-                                ) : null}
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -182,6 +213,8 @@ export default async function DashboardPage({
                       >
                         View
                       </Link>
+
+                      {user.role === "LECTURER" ? <DeleteNoteButton action={deleteNoteAction} noteId={n.id} /> : null}
                     </div>
                   </li>
                 ))}
