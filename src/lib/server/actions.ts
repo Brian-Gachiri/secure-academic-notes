@@ -40,14 +40,50 @@ export async function createShareLinkAction(formData: FormData) {
   const user = await requireRole("LECTURER");
 
   const noteId = String(formData.get("noteId") ?? "");
+  const expiryModeRaw = String(formData.get("expiryMode") ?? "").trim();
+  const expiryMode = expiryModeRaw || "";
+
   const expiresInHoursRaw = String(formData.get("expiresInHours") ?? "");
   const expiresInHours = expiresInHoursRaw ? Number(expiresInHoursRaw) : NaN;
+  const expiresInMonthsRaw = String(formData.get("expiresInMonths") ?? "");
+  const expiresInMonths = expiresInMonthsRaw ? Number(expiresInMonthsRaw) : NaN;
+  const expiresAtDateRaw = String(formData.get("expiresAtDate") ?? "").trim();
+  const expiresAtDateTimeRaw = String(formData.get("expiresAtDateTime") ?? "").trim();
 
   if (!noteId) redirect(`/dashboard?error=${encodeURIComponent("Missing note id.")}`);
 
   let expiresAt: string | null = null;
-  if (!Number.isNaN(expiresInHours) && expiresInHours > 0) {
-    expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
+  if (expiryMode === "hours") {
+    if (!Number.isNaN(expiresInHours) && expiresInHours > 0) {
+      expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
+    }
+  } else if (expiryMode === "months") {
+    if (!Number.isNaN(expiresInMonths) && expiresInMonths > 0) {
+      const date = new Date();
+      date.setMonth(date.getMonth() + expiresInMonths);
+      expiresAt = date.toISOString();
+    }
+  } else if (expiryMode === "datetime") {
+    if (expiresAtDateTimeRaw) {
+      const date = new Date(expiresAtDateTimeRaw);
+      if (Number.isNaN(date.getTime())) {
+        redirect(`/dashboard?error=${encodeURIComponent("Invalid expiry date/time.")}`);
+      }
+      expiresAt = date.toISOString();
+    }
+  } else {
+    // Backwards compatibility for older form fields
+    if (expiresAtDateRaw) {
+      const date = new Date(`${expiresAtDateRaw}T23:59:59.999Z`);
+      if (Number.isNaN(date.getTime())) {
+        redirect(`/dashboard?error=${encodeURIComponent("Invalid expiry date.")}`);
+      }
+      expiresAt = date.toISOString();
+    } else if (!Number.isNaN(expiresInMonths) && expiresInMonths > 0) {
+      const date = new Date();
+      date.setMonth(date.getMonth() + expiresInMonths);
+      expiresAt = date.toISOString();
+    }
   }
 
   const link = await createShareLink(noteId, user.id, expiresAt);

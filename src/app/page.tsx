@@ -7,11 +7,10 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-              <span className="text-sm font-semibold">AN</span>
+              <span className="text-sm font-semibold">SAN</span>
             </div>
             <div>
-              <div className="text-sm font-semibold tracking-tight">Academic Notes</div>
-              <div className="text-xs text-zinc-400">Secure note distribution for classes</div>
+              <div className="text-sm font-semibold tracking-tight">Secure Academic Notes</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -31,7 +30,7 @@ export default function Home() {
           <div className="mx-auto w-full max-w-6xl px-6 pb-16 pt-14">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              Server Actions only • Supabase Postgres + Storage
+              Secure note distribution for classes
             </div>
 
             <h1 className="mt-6 max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -48,12 +47,6 @@ export default function Home() {
                 className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
               >
                 Get started
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white hover:bg-white/10"
-              >
-                View demo credentials
               </Link>
             </div>
 
@@ -176,7 +169,7 @@ export default function Home() {
 
       <footer className="border-t border-white/10">
         <div className="mx-auto w-full max-w-6xl px-6 py-8 text-xs text-zinc-400">
-          Academic Notes Prototype • Next.js App Router • Supabase
+          Secure Academic Notes
         </div>
       </footer>
     </div>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/server/auth";
 import { createShareLinkAction, listNotesAction, logoutAction, revokeShareLinkAction, uploadNoteAction } from "@/lib/server/actions";
 import { listShareLinksForNote } from "@/lib/server/repo";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { ShareLinkCreateFormClient } from "@/components/ShareLinkCreateFormClient";
 
 export default async function DashboardPage({
   searchParams,
@@ -10,6 +12,8 @@ export default async function DashboardPage({
 }) {
   const user = await requireUser();
   const notes = await listNotesAction();
+
+  const appUrl = (process.env.APP_URL ?? "").replace(/\/$/, "");
 
   const noteLinks =
     user.role === "LECTURER"
@@ -58,7 +62,7 @@ export default async function DashboardPage({
 
         {share ? (
           <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            Share link created: <span className="font-mono">/share/{share}</span>
+            Share link created: <span className="font-mono">{appUrl ? `${appUrl}/share/${share}` : `/share/${share}`}</span>
           </div>
         ) : null}
 
@@ -138,25 +142,15 @@ export default async function DashboardPage({
 
                       {user.role === "LECTURER" ? (
                         <div className="mt-3 space-y-2">
-                          <form action={createShareLinkAction} className="flex flex-wrap items-center gap-2">
-                            <input type="hidden" name="noteId" value={n.id} />
-                            <input
-                              name="expiresInHours"
-                              placeholder="Expires (hrs)"
-                              className="w-32 rounded-lg border px-2 py-2 text-sm"
-                            />
-                            <button
-                              type="submit"
-                              className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                            >
-                              Create share link
-                            </button>
-                          </form>
+                          <ShareLinkCreateFormClient noteId={n.id} action={createShareLinkAction} />
 
                           <div className="space-y-1">
                             {(noteLinks.find((x) => x.noteId === n.id)?.links ?? []).slice(0, 3).map((l) => (
                               <div key={l.token} className="flex flex-wrap items-center gap-2 text-xs">
-                                <span className="font-mono">/share/{l.token}</span>
+                                <span className="font-mono">
+                                  {appUrl ? `${appUrl}/share/${l.token}` : `/share/${l.token}`}
+                                </span>
+                                <CopyLinkButton url={appUrl ? `${appUrl}/share/${l.token}` : `/share/${l.token}`} />
                                 <span className="text-zinc-500">
                                   {l.revokedAt
                                     ? "revoked"

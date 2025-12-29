@@ -19,6 +19,7 @@ export function NoteViewerClient({
   backLabel?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const pdfDocRef = useRef<unknown>(null);
 
   const [status, setStatus] = useState<
@@ -34,6 +35,8 @@ export function NoteViewerClient({
 
   const [pageCount, setPageCount] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
+  const [scale, setScale] = useState<number>(1.5);
+  const [fitWidth, setFitWidth] = useState<boolean>(true);
 
   const createdAt = useMemo(() => new Date().toLocaleString(), []);
 
@@ -68,6 +71,8 @@ export function NoteViewerClient({
 
       setPageCount(pdf.numPages);
       setPage(1);
+      setScale(1.5);
+      setFitWidth(true);
 
       const watermark = `${watermarkLabel} • ${createdAt}`;
 
@@ -96,7 +101,14 @@ export function NoteViewerClient({
       const pdfPage = await pdf.getPage(page);
       if (cancelled) return;
 
-      const viewport = pdfPage.getViewport({ scale: 1.5 });
+      const baseViewport = pdfPage.getViewport({ scale: 1 });
+      const container = containerRef.current;
+      const containerWidth = container?.clientWidth ?? 0;
+      const fitScale =
+        fitWidth && containerWidth > 0 ? Math.max(0.25, Math.min(4, containerWidth / baseViewport.width)) : null;
+      const effectiveScale = fitScale ?? scale;
+
+      const viewport = pdfPage.getViewport({ scale: effectiveScale });
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
@@ -109,7 +121,35 @@ export function NoteViewerClient({
     return () => {
       cancelled = true;
     };
-  }, [page, status]);
+  }, [page, status, scale, fitWidth]);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (status.type !== "ready") return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setPage((p) => Math.max(1, p - 1));
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setPage((p) => Math.min(pageCount || p + 1, p + 1));
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setFitWidth(false);
+        setScale((s) => Math.min(4, Math.round((s + 0.1) * 10) / 10));
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+        e.preventDefault();
+        setFitWidth(false);
+        setScale((s) => Math.max(0.25, Math.round((s - 0.1) * 10) / 10));
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "0") {
+        e.preventDefault();
+        setFitWidth(false);
+        setScale(1.5);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [status.type, pageCount]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -118,9 +158,6 @@ export function NoteViewerClient({
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-lg font-semibold">{status.type === "ready" ? status.title : "Loading…"}</h1>
-            <p className="mt-1 text-xs text-zinc-400">
-              Prototype viewer: download/copy is discouraged but not fully preventable.
-            </p>
           </div>
           {backHref ? (
             <Link href={backHref} className="rounded-lg bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700">
@@ -130,11 +167,54 @@ export function NoteViewerClient({
         </div>
 
         {status.type === "ready" ? (
-          <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm">
             <div className="text-zinc-300">
               Page <span className="font-medium">{page}</span> / {pageCount || "…"}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={fitWidth ? "fit" : String(Math.round(scale * 100))}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "fit") {
+                    setFitWidth(true);
+                    return;
+                  }
+                  const pct = Number(v);
+                  if (!Number.isFinite(pct)) return;
+                  setFitWidth(false);
+                  setScale(Math.max(0.25, Math.min(4, pct / 100)));
+                }}
+                className="rounded-lg bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700"
+              >
+                <option value="fit">Fit width</option>
+                <option value="50">50%</option>
+                <option value="75">75%</option>
+                <option value="100">100%</option>
+                <option value="125">125%</option>
+                <option value="150">150%</option>
+                <option value="175">175%</option>
+                <option value="200">200%</option>
+                <option value="250">250%</option>
+                <option value="300">300%</option>
+              </select>
+
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-300">Page</span>
+                <select
+                  value={String(page)}
+                  onChange={(e) => setPage(Number(e.target.value))}
+                  className="rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-50"
+                  disabled={!pageCount}
+                >
+                  {Array.from({ length: pageCount || 1 }, (_, i) => i + 1).map((p) => (
+                    <option key={p} value={String(p)}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <button
                 type="button"
                 className="rounded-lg bg-zinc-800 px-3 py-2 hover:bg-zinc-700 disabled:opacity-50"
@@ -155,7 +235,10 @@ export function NoteViewerClient({
           </div>
         ) : null}
 
-        <div className="relative mt-6 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+        <div
+          ref={containerRef}
+          className="relative mt-6 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900"
+        >
           <div
             className="absolute inset-0 z-10 select-none pointer-events-none"
             style={{
