@@ -173,7 +173,10 @@ export async function uploadNoteAction(formData: FormData) {
   const storagePath = `${noteId}.pdf`;
 
   const bytes = new Uint8Array(await file.arrayBuffer());
-  await uploadPdf(storagePath, bytes);
+  await uploadPdf(storagePath, bytes).catch((err) => {
+    console.error("Upload failed:", err);
+    redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
+  });
 
   const note: Note = {
     id: noteId,
