@@ -205,7 +205,10 @@ export async function uploadPdf(storagePath: string, bytes: Uint8Array): Promise
     upsert: false,
   });
 
-  if (error) throw error;
+  if (error) {
+    console.error("Supabase upload error:", error);
+    throw error;
+  }
 }
 
 export async function downloadPdf(storagePath: string): Promise<Uint8Array> {
