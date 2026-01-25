@@ -17,11 +17,6 @@ export default async function LoginPage({
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-10">
         <h1 className="text-2xl font-semibold tracking-tight">Academic Notes</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Prototype credentials:
-          <br />
-          Lecturer: lecturer@example.com / password
-        </p>
 
         <form action={loginAction} className="mt-8 space-y-4 rounded-xl border bg-white p-6 shadow-sm">
           {error ? (
@@ -72,9 +67,6 @@ export default async function LoginPage({
           */}
         </form>
 
-        <p className="mt-6 text-xs text-zinc-500">
-          This prototype discourages copying/downloading but cannot fully prevent it.
-        </p>
       </div>
     </div>
   );
